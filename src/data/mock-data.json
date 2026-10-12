@@ -1,0 +1,392 @@
+{
+  "flights": {
+    "Munnar": [
+      {
+        "id": "flt-blr-cok-01",
+        "airline": "IndiGo",
+        "flight_number": "6E-512",
+        "departure": "06:15 AM",
+        "arrival": "07:30 AM",
+        "duration": "1h 15m",
+        "price_inr": 3850,
+        "formatted_price": "₹3,850",
+        "badge": "Best",
+        "origin": "BLR",
+        "destination": "COK",
+        "origin_city": "Bengaluru (BLR)",
+        "destination_city": "Kochi (COK) - Munnar Gateway",
+        "stops": "Non-stop",
+        "cabin": "Economy"
+      },
+      {
+        "id": "flt-blr-cok-02",
+        "airline": "Akasa Air",
+        "flight_number": "QP-1382",
+        "departure": "08:45 AM",
+        "arrival": "10:05 AM",
+        "duration": "1h 20m",
+        "price_inr": 3200,
+        "formatted_price": "₹3,200",
+        "badge": "Cheapest",
+        "origin": "BLR",
+        "destination": "COK",
+        "origin_city": "Bengaluru (BLR)",
+        "destination_city": "Kochi (COK)",
+        "stops": "Non-stop",
+        "cabin": "Economy"
+      },
+      {
+        "id": "flt-blr-cok-03",
+        "airline": "Air India Express",
+        "flight_number": "IX-143",
+        "departure": "05:40 AM",
+        "arrival": "06:50 AM",
+        "duration": "1h 10m",
+        "price_inr": 4450,
+        "formatted_price": "₹4,450",
+        "badge": "Fastest",
+        "origin": "BLR",
+        "destination": "COK",
+        "origin_city": "Bengaluru (BLR)",
+        "destination_city": "Kochi (COK)",
+        "stops": "Non-stop",
+        "cabin": "Economy Prime"
+      }
+    ],
+    "Goa": [
+      {
+        "id": "flt-blr-goi-01",
+        "airline": "IndiGo",
+        "flight_number": "6E-645",
+        "departure": "07:00 AM",
+        "arrival": "08:15 AM",
+        "duration": "1h 15m",
+        "price_inr": 3499,
+        "formatted_price": "₹3,499",
+        "badge": "Best",
+        "origin": "BLR",
+        "destination": "GOI",
+        "origin_city": "Bengaluru (BLR)",
+        "destination_city": "Goa Dabolim (GOI)",
+        "stops": "Non-stop",
+        "cabin": "Economy"
+      },
+      {
+        "id": "flt-blr-goi-02",
+        "airline": "SpiceJet",
+        "flight_number": "SG-103",
+        "departure": "10:30 AM",
+        "arrival": "11:55 AM",
+        "duration": "1h 25m",
+        "price_inr": 2950,
+        "formatted_price": "₹2,950",
+        "badge": "Cheapest",
+        "origin": "BLR",
+        "destination": "GOI",
+        "origin_city": "Bengaluru (BLR)",
+        "destination_city": "Goa (GOX)",
+        "stops": "Non-stop",
+        "cabin": "Economy"
+      },
+      {
+        "id": "flt-blr-goi-03",
+        "airline": "Air India",
+        "flight_number": "AI-581",
+        "departure": "06:00 AM",
+        "arrival": "07:10 AM",
+        "duration": "1h 10m",
+        "price_inr": 4200,
+        "formatted_price": "₹4,200",
+        "badge": "Fastest",
+        "origin": "BLR",
+        "destination": "GOI",
+        "origin_city": "Bengaluru (BLR)",
+        "destination_city": "Goa (GOI)",
+        "stops": "Non-stop",
+        "cabin": "Premium Economy"
+      }
+    ],
+    "Jaipur": [
+      {
+        "id": "flt-blr-jai-01",
+        "airline": "IndiGo",
+        "flight_number": "6E-481",
+        "departure": "06:10 AM",
+        "arrival": "08:45 AM",
+        "duration": "2h 35m",
+        "price_inr": 5120,
+        "formatted_price": "₹5,120",
+        "badge": "Best",
+        "origin": "BLR",
+        "destination": "JAI",
+        "origin_city": "Bengaluru (BLR)",
+        "destination_city": "Jaipur (JAI)",
+        "stops": "Non-stop",
+        "cabin": "Economy"
+      },
+      {
+        "id": "flt-blr-jai-02",
+        "airline": "Air India Express",
+        "flight_number": "IX-772",
+        "departure": "09:20 AM",
+        "arrival": "12:00 PM",
+        "duration": "2h 40m",
+        "price_inr": 4650,
+        "formatted_price": "₹4,650",
+        "badge": "Cheapest",
+        "origin": "BLR",
+        "destination": "JAI",
+        "origin_city": "Bengaluru (BLR)",
+        "destination_city": "Jaipur (JAI)",
+        "stops": "Non-stop",
+        "cabin": "Economy"
+      },
+      {
+        "id": "flt-blr-jai-03",
+        "airline": "Air India",
+        "flight_number": "AI-840",
+        "departure": "05:30 AM",
+        "arrival": "07:55 AM",
+        "duration": "2h 25m",
+        "price_inr": 5900,
+        "formatted_price": "₹5,900",
+        "badge": "Fastest",
+        "origin": "BLR",
+        "destination": "JAI",
+        "origin_city": "Bengaluru (BLR)",
+        "destination_city": "Jaipur (JAI)",
+        "stops": "Non-stop",
+        "cabin": "Economy Flex"
+      }
+    ]
+  },
+  "hotels": {
+    "Munnar": [
+      {
+        "id": "hot-munnar-01",
+        "name": "Fragrant Nature Munnar Luxury Retreat",
+        "location": "Pothamedu Viewpoint Ridge, Munnar",
+        "rating": 4.8,
+        "reviews_count": 940,
+        "price_per_night_inr": 5800,
+        "total_price_inr": 11600,
+        "nights": 2,
+        "amenities": ["Free WiFi", "Breakfast Included", "Tea Valley Spa", "Heated Fireplace"],
+        "badge": "Best",
+        "image_url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80",
+        "distance_to_center": "4.2 km from Munnar Town"
+      },
+      {
+        "id": "hot-munnar-02",
+        "name": "The Tall Trees Eco Resort & Canopy Walk",
+        "location": "Bison Valley Road, Pothamedu",
+        "rating": 4.7,
+        "reviews_count": 620,
+        "price_per_night_inr": 4200,
+        "total_price_inr": 8400,
+        "nights": 2,
+        "amenities": ["Free WiFi", "Breakfast Included", "Forest Trail", "Organic Café"],
+        "badge": "Cheapest",
+        "image_url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80",
+        "distance_to_center": "5.8 km from Munnar Town"
+      },
+      {
+        "id": "hot-munnar-03",
+        "name": "Elixir Hills Suites & Ayurvedic Spa",
+        "location": "Near Letchmi Tea Estate, Munnar",
+        "rating": 4.9,
+        "reviews_count": 1150,
+        "price_per_night_inr": 7200,
+        "total_price_inr": 14400,
+        "nights": 2,
+        "amenities": ["Free WiFi", "Infinity Pool", "Spa & Wellness", "Valet Parking"],
+        "badge": "Top Pick",
+        "image_url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=600&q=80",
+        "distance_to_center": "7.1 km from Munnar Town"
+      }
+    ],
+    "Goa": [
+      {
+        "id": "hot-goa-01",
+        "name": "Ahilya by the Sea Heritage Villa",
+        "location": "Dolphin Bay, Nerul, North Goa",
+        "rating": 4.9,
+        "reviews_count": 530,
+        "price_per_night_inr": 6500,
+        "total_price_inr": 13000,
+        "nights": 2,
+        "amenities": ["Free WiFi", "Breakfast Included", "Sea View", "Plunge Pool"],
+        "badge": "Best",
+        "image_url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=600&q=80",
+        "distance_to_center": "200m from Nerul Beach"
+      },
+      {
+        "id": "hot-goa-02",
+        "name": "Santana Beach Resort Boutique",
+        "location": "Candolim Coastline, North Goa",
+        "rating": 4.6,
+        "reviews_count": 820,
+        "price_per_night_inr": 3600,
+        "total_price_inr": 7200,
+        "nights": 2,
+        "amenities": ["Free WiFi", "Breakfast Included", "Direct Beach Access", "Bar & Bistro"],
+        "badge": "Cheapest",
+        "image_url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=600&q=80",
+        "distance_to_center": "100m from Candolim Beach"
+      },
+      {
+        "id": "hot-goa-03",
+        "name": "W Goa Tropical Beachfront Haven",
+        "location": "Vagator Beach, North Goa",
+        "rating": 4.8,
+        "reviews_count": 1400,
+        "price_per_night_inr": 8900,
+        "total_price_inr": 17800,
+        "nights": 2,
+        "amenities": ["Free WiFi", "Rock Pool", "Spa by Clarins", "Private Beach Access"],
+        "badge": "Top Pick",
+        "image_url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80",
+        "distance_to_center": "Facing Vagator Cliffs"
+      }
+    ],
+    "Jaipur": [
+      {
+        "id": "hot-jaipur-01",
+        "name": "Shahpura House Heritage Haveli",
+        "location": "Devi Marg, Bani Park, Jaipur",
+        "rating": 4.8,
+        "reviews_count": 1120,
+        "price_per_night_inr": 4900,
+        "total_price_inr": 9800,
+        "nights": 2,
+        "amenities": ["Free WiFi", "Rooftop Dining", "Royal Courtyard Pool", "Rajasthani Breakfast"],
+        "badge": "Best",
+        "image_url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80",
+        "distance_to_center": "2.5 km from City Palace"
+      },
+      {
+        "id": "hot-jaipur-02",
+        "name": "Umaid Bhawan Heritage Home",
+        "location": "Behari Marg, Bani Park",
+        "rating": 4.6,
+        "reviews_count": 780,
+        "price_per_night_inr": 3200,
+        "total_price_inr": 6400,
+        "nights": 2,
+        "amenities": ["Free WiFi", "Breakfast Included", "Frescoed Lounge", "Airport Transfer"],
+        "badge": "Cheapest",
+        "image_url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=600&q=80",
+        "distance_to_center": "3.0 km from Old City"
+      },
+      {
+        "id": "hot-jaipur-03",
+        "name": "Samode Haveli Royal Residence",
+        "location": "Gangapole, Old City, Jaipur",
+        "rating": 4.9,
+        "reviews_count": 890,
+        "price_per_night_inr": 8500,
+        "total_price_inr": 17000,
+        "nights": 2,
+        "amenities": ["Free WiFi", "Historic Spa", "Jacuzzi Courtyard", "Royal High Tea"],
+        "badge": "Top Pick",
+        "image_url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80",
+        "distance_to_center": "800m from Hawa Mahal"
+      }
+    ]
+  },
+  "local": {
+    "Munnar": [
+      {
+        "title": "Meesapulimala Peak",
+        "type": "Mountain / Trek",
+        "rating": 4.9,
+        "reviews": 1240,
+        "address": "Idukki District, Munnar, Kerala 685612"
+      },
+      {
+        "title": "Kolukkumalai Tea Estate",
+        "type": "Tea Plantation & Factory",
+        "rating": 4.8,
+        "reviews": 2180,
+        "address": "Kottagudi, Munnar Border, Kerala"
+      },
+      {
+        "title": "Eravikulam National Park",
+        "type": "Wildlife Sanctuary",
+        "rating": 4.7,
+        "reviews": 3400,
+        "address": "Kannan Devan Hills, Munnar"
+      }
+    ],
+    "Goa": [
+      {
+        "title": "Fontainhas Latin Quarter",
+        "type": "Heritage Quarter",
+        "rating": 4.8,
+        "reviews": 2890,
+        "address": "Panaji, North Goa, Goa 403001"
+      },
+      {
+        "title": "Chapora Fort",
+        "type": "Historical Fort & Sunset Point",
+        "rating": 4.7,
+        "reviews": 4100,
+        "address": "Chapora, North Goa, Goa 403509"
+      }
+    ],
+    "Jaipur": [
+      {
+        "title": "Amer Fort & Palace",
+        "type": "UNESCO World Heritage Fort",
+        "rating": 4.9,
+        "reviews": 9800,
+        "address": "Devisinghpura, Amer, Jaipur, Rajasthan 302001"
+      },
+      {
+        "title": "Hawa Mahal",
+        "type": "Palace of Winds",
+        "rating": 4.8,
+        "reviews": 8400,
+        "address": "Hawa Mahal Rd, Badi Choupad, J.D.A. Market, Jaipur"
+      }
+    ]
+  },
+  "events": {
+    "Munnar": [
+      {
+        "title": "Munnar Spice Harvest Festival",
+        "date": "November - December",
+        "venue": "Munnar Town Center"
+      },
+      {
+        "title": "Neelakurinji Blooming Trail Walk",
+        "date": "Seasonal",
+        "venue": "Eravikulam Slopes"
+      }
+    ],
+    "Goa": [
+      {
+        "title": "Goa Sunsplash Reggae & Arts Festival",
+        "date": "January",
+        "venue": "Mandrem Coast, North Goa"
+      },
+      {
+        "title": "Fontainhas Heritage Art Festival",
+        "date": "December",
+        "venue": "Panjim Latin Quarter"
+      }
+    ],
+    "Jaipur": [
+      {
+        "title": "Jaipur Literature Festival",
+        "date": "January",
+        "venue": "Hotel Clarks Amer, Jaipur"
+      },
+      {
+        "title": "Teej & Gangaur Heritage Fair",
+        "date": "Seasonal",
+        "venue": "City Palace Precinct"
+      }
+    ]
+  }
+}

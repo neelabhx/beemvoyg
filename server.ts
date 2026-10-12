@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
@@ -14,8 +15,16 @@ const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Strict statelessness: Cache-Control headers on all API responses
-app.use(express.json());
+// Strict statelessness & Security Headers Middleware
+app.use(express.json({ limit: '500kb' }));
+
+// Global Security Middleware
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 app.use('/api', (_req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -380,12 +389,15 @@ function extractIntentHeuristically(prompt: string) {
 
 // Route 1: POST /api/parse-intent
 app.post('/api/parse-intent', async (req: Request, res: Response) => {
-  const { prompt } = req.body || {};
+  const rawPrompt = req.body?.prompt;
 
-  if (!prompt || typeof prompt !== 'string') {
+  if (!rawPrompt || typeof rawPrompt !== 'string' || rawPrompt.trim() === '') {
     res.status(400).json({ status: 'error', message: 'Valid prompt string is required' });
     return;
   }
+
+  // Sanitize input to max 1000 chars to avoid memory bloat
+  const prompt = rawPrompt.trim().slice(0, 1000);
 
   const geminiKey = process.env.GEMINI_API_KEY;
   const isInvalidOrPlaceholder = !geminiKey || geminiKey === 'MY_GEMINI_API_KEY' || geminiKey.trim() === '' || geminiKey.includes('placeholder');
@@ -477,15 +489,24 @@ app.post('/api/parse-intent', async (req: Request, res: Response) => {
   });
 });
 
-// Route 2: POST /api/search (Flights, Hotels, Local)
+// Route 2: POST /api/search (Google Flights, Google Hotels, Google Local, Google Events)
 app.post('/api/search', async (req: Request, res: Response) => {
-  const { type = 'flights', destination = 'Munnar' } = req.body || {};
+  const allowedTypes = ['flights', 'hotels', 'local', 'activities', 'events'];
+  const rawType = typeof req.body?.type === 'string' ? req.body.type.toLowerCase().trim() : 'flights';
+  const type = allowedTypes.includes(rawType) ? rawType : 'flights';
 
-  const normDest = String(destination).toLowerCase().includes('goa')
+  const rawDest = typeof req.body?.destination === 'string' ? req.body.destination.trim().slice(0, 80) : 'Munnar';
+  const rawOrigin = typeof req.body?.origin === 'string' ? req.body.origin.trim().toUpperCase().slice(0, 10) : 'BLR';
+  const query = typeof req.body?.query === 'string' ? req.body.query.trim().slice(0, 150) : '';
+
+  const normDest = rawDest.toLowerCase().includes('goa')
     ? 'Goa'
-    : String(destination).toLowerCase().includes('jaipur')
+    : rawDest.toLowerCase().includes('jaipur')
     ? 'Jaipur'
     : 'Munnar';
+
+  const origin = rawOrigin || 'BLR';
+  const destAirportCode = normDest === 'Goa' ? 'GOI' : normDest === 'Jaipur' ? 'JAI' : 'COK';
 
   const serpApiKey = process.env.SERPAPI_API_KEY;
   const isInvalidSerpKey = !serpApiKey || serpApiKey === 'MY_SERPAPI_API_KEY' || serpApiKey.trim() === '' || serpApiKey.includes('placeholder');
@@ -493,45 +514,139 @@ app.post('/api/search', async (req: Request, res: Response) => {
 
   if (!useMock && serpApiKey) {
     try {
-      let serpEngine = 'google_flights';
-      if (type === 'hotels') serpEngine = 'google_hotels';
-      else if (type === 'local' || type === 'activities') serpEngine = 'google_local';
-
       const searchUrl = new URL('https://serpapi.com/search.json');
-      searchUrl.searchParams.set('engine', serpEngine);
       searchUrl.searchParams.set('api_key', serpApiKey);
-      searchUrl.searchParams.set('q', `${normDest} travel`);
+      searchUrl.searchParams.set('currency', 'INR');
+      searchUrl.searchParams.set('gl', 'in');
+      searchUrl.searchParams.set('hl', 'en');
+
+      if (type === 'flights') {
+        searchUrl.searchParams.set('engine', 'google_flights');
+        searchUrl.searchParams.set('departure_id', origin || 'BLR');
+        searchUrl.searchParams.set('arrival_id', destAirportCode);
+        searchUrl.searchParams.set('type', '2'); // One-way for clarity
+      } else if (type === 'hotels') {
+        searchUrl.searchParams.set('engine', 'google_hotels');
+        searchUrl.searchParams.set('q', query || `${normDest} luxury hotels resort`);
+      } else if (type === 'events') {
+        searchUrl.searchParams.set('engine', 'google_events');
+        searchUrl.searchParams.set('q', query || `${normDest} festivals events`);
+      } else {
+        // google_local for activities and attractions
+        searchUrl.searchParams.set('engine', 'google_local');
+        searchUrl.searchParams.set('q', query || `${normDest} top sights tourist attractions`);
+      }
 
       const serpRes = await fetch(searchUrl.toString(), {
-        headers: { 'User-Agent': 'BeemvoyApp/1.0' }
+        headers: { 'User-Agent': 'BeemvoygApp/1.0' }
       });
 
       if (serpRes.ok) {
         const liveData = await serpRes.json();
-        // Sanitize: strip tokens and internal params
+        // Sanitize: strip tokens and internal query metadata
         delete liveData.search_metadata;
         delete liveData.search_parameters;
-        res.json({
-          status: 'success',
-          source: 'serpapi-live',
-          category: type,
-          results: liveData.best_flights || liveData.properties || liveData.local_results || []
-        });
-        return;
+
+        // Structured normalization
+        if (type === 'flights') {
+          const rawFlights = liveData.best_flights || liveData.other_flights || [];
+          if (Array.isArray(rawFlights) && rawFlights.length > 0) {
+            const normalized = rawFlights.slice(0, 5).map((f: any, idx: number) => {
+              const leg = f.flights?.[0] || {};
+              const price = f.price || 3500 + idx * 450;
+              return {
+                id: `live-flt-${idx}`,
+                airline: leg.airline || 'IndiGo',
+                flight_number: leg.flight_number || `6E-${500 + idx * 12}`,
+                departure: leg.departure_airport?.time || '06:15 AM',
+                arrival: leg.arrival_airport?.time || '07:30 AM',
+                duration: `${Math.floor((f.total_duration || 75) / 60)}h ${(f.total_duration || 75) % 60}m`,
+                price_inr: price,
+                formatted_price: `₹${Number(price).toLocaleString('en-IN')}`,
+                badge: idx === 0 ? 'Best' : idx === 1 ? 'Cheapest' : 'Fastest',
+                origin: origin || 'BLR',
+                destination: destAirportCode,
+                origin_city: `Bengaluru (${origin || 'BLR'})`,
+                destination_city: `${normDest} (${destAirportCode})`,
+                stops: f.flights?.length > 1 ? `${f.flights.length - 1} stop` : 'Non-stop',
+                cabin: leg.travel_class || 'Economy'
+              };
+            });
+            res.json({
+              status: 'success',
+              source: 'serpapi-live',
+              engine: 'google_flights',
+              category: 'flights',
+              results: normalized
+            });
+            return;
+          }
+        } else if (type === 'hotels') {
+          const rawProperties = liveData.properties || [];
+          if (Array.isArray(rawProperties) && rawProperties.length > 0) {
+            const normalized = rawProperties.slice(0, 5).map((h: any, idx: number) => {
+              const nightly = h.rate_per_night?.extracted_lowest || 4500 + idx * 900;
+              return {
+                id: `live-hot-${idx}`,
+                name: h.name || `${normDest} Heritage Resort`,
+                location: h.description || `${normDest} Center`,
+                rating: h.overall_rating || 4.7,
+                reviews_count: h.reviews || 420,
+                price_per_night_inr: nightly,
+                total_price_inr: nightly * 2,
+                nights: 2,
+                amenities: h.amenities?.slice(0, 4) || ['Free WiFi', 'Breakfast Included', 'Spa'],
+                badge: idx === 0 ? 'Best' : idx === 1 ? 'Cheapest' : 'Top Pick',
+                image_url: h.images?.[0]?.thumbnail || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80',
+                distance_to_center: 'Near Town Center'
+              };
+            });
+            res.json({
+              status: 'success',
+              source: 'serpapi-live',
+              engine: 'google_hotels',
+              category: 'hotels',
+              results: normalized
+            });
+            return;
+          }
+        } else {
+          res.json({
+            status: 'success',
+            source: 'serpapi-live',
+            engine: type === 'events' ? 'google_events' : 'google_local',
+            category: type,
+            results: liveData.events_results || liveData.local_results || []
+          });
+          return;
+        }
       }
     } catch (err) {
-      console.warn('SerpApi live search error, falling back to mock:', err);
+      console.warn('SerpApi live search error, falling back to curated mock data:', err);
     }
   }
 
-  // Defensive cloning of frozen mock dataset
-  let dataset: unknown[] = [];
-  if (type === 'hotels') {
-    const raw = (FROZEN_MOCK_DATA.hotels as Record<string, unknown[]>)[normDest] || FROZEN_MOCK_DATA.hotels.Munnar;
-    dataset = structuredClone(raw);
-  } else {
-    const raw = (FROZEN_MOCK_DATA.flights as Record<string, unknown[]>)[normDest] || FROZEN_MOCK_DATA.flights.Munnar;
-    dataset = structuredClone(raw);
+  // Defensive fallback reading from src/data/mock-data.json or frozen reference dataset
+  let fallbackDataset: unknown[] = [];
+  try {
+    const mockFilePath = path.resolve(__dirname, 'src/data/mock-data.json');
+    if (fs.existsSync(mockFilePath)) {
+      const parsedMock = JSON.parse(fs.readFileSync(mockFilePath, 'utf-8'));
+      const catData = parsedMock[type] || parsedMock.flights;
+      fallbackDataset = structuredClone(catData[normDest] || catData.Munnar || []);
+    }
+  } catch (readErr) {
+    console.warn('mock-data.json read error, using frozen object:', readErr);
+  }
+
+  if (!fallbackDataset || fallbackDataset.length === 0) {
+    if (type === 'hotels') {
+      const raw = (FROZEN_MOCK_DATA.hotels as Record<string, unknown[]>)[normDest] || FROZEN_MOCK_DATA.hotels.Munnar;
+      fallbackDataset = structuredClone(raw);
+    } else {
+      const raw = (FROZEN_MOCK_DATA.flights as Record<string, unknown[]>)[normDest] || FROZEN_MOCK_DATA.flights.Munnar;
+      fallbackDataset = structuredClone(raw);
+    }
   }
 
   res.json({
@@ -539,7 +654,7 @@ app.post('/api/search', async (req: Request, res: Response) => {
     source: 'stateless-cloned-mock',
     category: type,
     destination: normDest,
-    results: dataset
+    results: fallbackDataset
   });
 });
 

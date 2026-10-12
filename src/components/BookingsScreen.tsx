@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plane, Building2, Check, ArrowRight, Star, MapPin } from 'lucide-react';
+import { Plane, Building2, Check, ArrowRight, Star, MapPin, RefreshCw, Sparkles } from 'lucide-react';
 import { TripFlight, TripHotel, RankingBadge } from '../types/trip';
 import { MOCK_FLIGHTS_DATA, MOCK_HOTELS_DATA } from '../lib/mockData';
 
@@ -38,72 +38,65 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
 
   const amenitiesList = ['All', 'Breakfast Included', 'Free WiFi', 'Spa', 'Pool'];
 
-  useEffect(() => {
-    let isMounted = true;
+  const [flightsSource, setFlightsSource] = useState<string>('Curated');
+  const [hotelsSource, setHotelsSource] = useState<string>('Curated');
+
+  const executeFlightsSearch = async (isLiveTrigger = false) => {
     setIsFlightsLoading(true);
-
-    const fetchFlights = async () => {
-      try {
-        const res = await fetch('/api/search', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'flights', destination })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted && Array.isArray(data.results) && data.results.length > 0) {
-            setFlights(data.results);
-            setIsFlightsLoading(false);
-            return;
-          }
+    try {
+      const res = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'flights', destination, live: isLiveTrigger })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.results) && data.results.length > 0) {
+          setFlights(data.results);
+          setFlightsSource(data.source === 'serpapi-live' ? 'SerpApi Live' : 'Curated');
+          setIsFlightsLoading(false);
+          return;
         }
-      } catch (err) {
-        console.warn('Flight fetch failed, using mock:', err);
       }
-      if (isMounted) {
-        setFlights(MOCK_FLIGHTS_DATA[destination] || MOCK_FLIGHTS_DATA['Munnar']);
-        setIsFlightsLoading(false);
-      }
-    };
+    } catch (err) {
+      console.warn('Flight fetch error, falling back to mock:', err);
+    }
+    setFlights(MOCK_FLIGHTS_DATA[destination] || MOCK_FLIGHTS_DATA['Munnar']);
+    setFlightsSource('Curated');
+    setIsFlightsLoading(false);
+  };
 
-    fetchFlights();
-    return () => {
-      isMounted = false;
-    };
+  const executeHotelsSearch = async (isLiveTrigger = false) => {
+    setIsHotelsLoading(true);
+    try {
+      const res = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'hotels', destination, live: isLiveTrigger })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.results) && data.results.length > 0) {
+          setHotels(data.results);
+          setHotelsSource(data.source === 'serpapi-live' ? 'SerpApi Live' : 'Curated');
+          setIsHotelsLoading(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Hotel fetch error, falling back to mock:', err);
+    }
+    setHotels(MOCK_HOTELS_DATA[destination] || MOCK_HOTELS_DATA['Munnar']);
+    setHotelsSource('Curated');
+    setIsHotelsLoading(false);
+  };
+
+  useEffect(() => {
+    executeFlightsSearch(false);
   }, [destination]);
 
   useEffect(() => {
-    let isMounted = true;
-    setIsHotelsLoading(true);
-
-    const fetchHotels = async () => {
-      try {
-        const res = await fetch('/api/search', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'hotels', destination })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted && Array.isArray(data.results) && data.results.length > 0) {
-            setHotels(data.results);
-            setIsHotelsLoading(false);
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn('Hotel fetch failed, using mock:', err);
-      }
-      if (isMounted) {
-        setHotels(MOCK_HOTELS_DATA[destination] || MOCK_HOTELS_DATA['Munnar']);
-        setIsHotelsLoading(false);
-      }
-    };
-
-    fetchHotels();
-    return () => {
-      isMounted = false;
-    };
+    executeHotelsSearch(false);
   }, [destination]);
 
   const filteredFlights = flights.filter(f => {
@@ -192,21 +185,43 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
       {/* FLIGHTS SUB-VIEW */}
       {subTab === 'flights' && (
         <div className="space-y-3 flex-1">
-          {/* Flight Filters */}
-          <div className="flex items-center p-1 bg-slate-900/80 rounded-xl border border-slate-800 mb-1">
-            {(['all', 'Cheapest', 'Fastest'] as const).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setFlightFilter(mode)}
-                className={`flex-1 py-1 text-[11px] font-medium rounded-lg transition-all capitalize active:scale-95 ${
-                  flightFilter === mode
-                    ? 'bg-purple-900/70 text-purple-200 border border-purple-500/40'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                {mode === 'all' ? 'All Flights' : mode}
-              </button>
-            ))}
+          {/* Flight Filters & On-Demand Live Search Trigger */}
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex-1 flex items-center p-1 bg-slate-900/80 rounded-xl border border-slate-800">
+              {(['all', 'Cheapest', 'Fastest'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setFlightFilter(mode)}
+                  className={`flex-1 py-1 text-[11px] font-medium rounded-lg transition-all capitalize active:scale-95 ${
+                    flightFilter === mode
+                      ? 'bg-purple-900/70 text-purple-200 border border-purple-500/40'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {mode === 'all' ? 'All' : mode}
+                </button>
+              ))}
+            </div>
+
+            {/* Explicit On-Demand Live Search Trigger */}
+            <button
+              type="button"
+              onClick={() => executeFlightsSearch(true)}
+              disabled={isFlightsLoading}
+              className="py-1.5 px-2.5 bg-purple-950/90 hover:bg-purple-900/80 border border-purple-600/50 rounded-xl text-purple-300 hover:text-white text-[11px] font-semibold flex items-center gap-1.5 active:scale-95 transition-all shadow-sm shrink-0 cursor-pointer disabled:opacity-50"
+              title="Query SerpApi Google Flights Live"
+            >
+              <RefreshCw className={`w-3 h-3 ${isFlightsLoading ? 'animate-spin text-purple-400' : ''}`} />
+              <span>Live Search</span>
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between px-1 text-[10px] text-slate-400">
+            <span>Route: BLR → {destination === 'Goa' ? 'GOI' : destination === 'Jaipur' ? 'JAI' : 'COK'}</span>
+            <span className="flex items-center gap-1">
+              <span className={`w-1.5 h-1.5 rounded-full ${flightsSource === 'SerpApi Live' ? 'bg-emerald-400' : 'bg-purple-400'}`} />
+              <span>{flightsSource}</span>
+            </span>
           </div>
 
           {isFlightsLoading ? (
@@ -295,21 +310,43 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
       {/* HOTELS SUB-VIEW */}
       {subTab === 'hotels' && (
         <div className="space-y-3.5 flex-1">
-          {/* Amenity Filter */}
-          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
-            {amenitiesList.map((item) => (
-              <button
-                key={item}
-                onClick={() => setAmenityFilter(item)}
-                className={`text-[11px] px-2.5 py-1 rounded-lg border whitespace-nowrap transition-all active:scale-95 ${
-                  amenityFilter === item
-                    ? 'bg-purple-600 text-white border-purple-500 font-semibold'
-                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
-                }`}
-              >
-                {item}
-              </button>
-            ))}
+          {/* Amenity Filter & On-Demand Live Search Trigger */}
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex-1 flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
+              {amenitiesList.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setAmenityFilter(item)}
+                  className={`text-[11px] px-2.5 py-1 rounded-lg border whitespace-nowrap transition-all active:scale-95 ${
+                    amenityFilter === item
+                      ? 'bg-purple-600 text-white border-purple-500 font-semibold'
+                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+
+            {/* Explicit On-Demand Live Search Trigger */}
+            <button
+              type="button"
+              onClick={() => executeHotelsSearch(true)}
+              disabled={isHotelsLoading}
+              className="py-1.5 px-2.5 bg-purple-950/90 hover:bg-purple-900/80 border border-purple-600/50 rounded-xl text-purple-300 hover:text-white text-[11px] font-semibold flex items-center gap-1.5 active:scale-95 transition-all shadow-sm shrink-0 cursor-pointer disabled:opacity-50"
+              title="Query SerpApi Google Hotels Live"
+            >
+              <RefreshCw className={`w-3 h-3 ${isHotelsLoading ? 'animate-spin text-purple-400' : ''}`} />
+              <span>Live Search</span>
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between px-1 text-[10px] text-slate-400">
+            <span>Stays in {destination}</span>
+            <span className="flex items-center gap-1">
+              <span className={`w-1.5 h-1.5 rounded-full ${hotelsSource === 'SerpApi Live' ? 'bg-emerald-400' : 'bg-purple-400'}`} />
+              <span>{hotelsSource}</span>
+            </span>
           </div>
 
           {isHotelsLoading ? (
