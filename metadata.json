@@ -1,0 +1,8 @@
+{
+  "name": "BEEMVOYG - AI Travel Planner",
+  "description": "India-first, mobile-optimized AI travel planning MVP with natural language intent synthesis, curated flight & hotel discovery, interactive day-by-day itineraries, and smart split ledger.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
