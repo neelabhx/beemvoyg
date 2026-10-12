@@ -115,7 +115,10 @@ export default function App() {
     try {
       const res = await fetch('/api/parse-intent', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionUser?.id || 'session-token'}`
+        },
         body: JSON.stringify({ prompt: promptText })
       });
 

@@ -96,3 +96,51 @@ CREATE POLICY "Trips: Users can only delete their own trips"
   ON public.trips FOR DELETE
   TO authenticated
   USING (auth.uid() = user_id);
+
+-- 3. Bookings Table (Flights, Stays, and Package Reservations)
+CREATE TABLE IF NOT EXISTS public.bookings (
+  id TEXT PRIMARY KEY,
+  trip_id TEXT REFERENCES public.trips(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  booking_type TEXT NOT NULL CHECK (booking_type IN ('flight', 'hotel', 'activity', 'package')),
+  reference_code TEXT NOT NULL,
+  total_amount_inr INTEGER NOT NULL,
+  booking_details JSONB DEFAULT '{}'::jsonb,
+  status TEXT DEFAULT 'confirmed' CHECK (status IN ('pending', 'confirmed', 'cancelled')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Performance Indexes
+CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON public.bookings(user_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_trip_id ON public.bookings(trip_id);
+
+-- Enable Row Level Security on bookings
+ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
+
+-- Bookings RLS Policies: Strict user-only access based on auth.uid()
+DROP POLICY IF EXISTS "Bookings: Users can only read their own bookings" ON public.bookings;
+CREATE POLICY "Bookings: Users can only read their own bookings"
+  ON public.bookings FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Bookings: Users can only insert their own bookings" ON public.bookings;
+CREATE POLICY "Bookings: Users can only insert their own bookings"
+  ON public.bookings FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Bookings: Users can only update their own bookings" ON public.bookings;
+CREATE POLICY "Bookings: Users can only update their own bookings"
+  ON public.bookings FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Bookings: Users can only delete their own bookings" ON public.bookings;
+CREATE POLICY "Bookings: Users can only delete their own bookings"
+  ON public.bookings FOR DELETE
+  TO authenticated
+  USING (auth.uid() = user_id);
+
